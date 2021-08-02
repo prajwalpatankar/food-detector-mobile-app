@@ -4,6 +4,10 @@ from rest_framework import viewsets
 import requests
 from django.shortcuts import render
 from django.http import HttpResponse
+from rest_framework.response import Response
+from rest_framework.decorators import api_view, renderer_classes
+from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
+
 
 import torch 
 import torchvision.transforms as T
@@ -15,6 +19,8 @@ class ImageCreateAPIView(viewsets.ModelViewSet):
 	serializer_class = imageSerializer
 	queryset = MyImage.objects.all()
 
+@api_view(('GET',))
+@renderer_classes((TemplateHTMLRenderer, JSONRenderer))
 def model_call(request):
 	req_id = request.GET.get('id')
 	img_obj = MyImage.objects.get(id=req_id)
@@ -66,5 +72,5 @@ def model_call(request):
 	health_labels = recipes['healthLabels']         # categories
 	ingredients_all = recipes['ingredientLines']    #ingredients with quantity
 	calories = round(recipes['calories'],2)
-	context = {"ingredients_all" : ingredients_all, 'item_name': food_item, 'health_label': health_labels, 'calories': calories}
-	return HttpResponse(context)
+	data = {'ingredients_all' : ingredients_all, 'item_name': food_item, 'health_label': health_labels, 'calories': calories}
+	return Response(data)
